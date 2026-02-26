@@ -1,0 +1,9 @@
+build/
+node_modules/
+wasm/*.cjs
+wasm/*.js
+wasm/*.wasm
+.build_tmp/
+*.o
+*.a
+.DS_Store
