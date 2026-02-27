@@ -29,7 +29,7 @@ const PROBA_OBJECTIVES = new Set([
 ])
 
 // LightGBM params that are wlearn-only (not passed to Booster)
-const WLEARN_PARAMS = new Set(['numRound', 'coerce'])
+const WLEARN_PARAMS = new Set(['numRound', 'coerce', 'task'])
 
 // --- Internal sentinel for load path ---
 const LOAD_SENTINEL = Symbol('load')
@@ -77,6 +77,9 @@ export class LGBModel {
 
   fit(X, y) {
     this.#ensureNotDisposed()
+
+    // Map task param to objective if needed
+    this.#resolveTask(y)
 
     // Dispose previous booster if refitting
     if (this.#booster) {
@@ -410,6 +413,30 @@ export class LGBModel {
   #ensureFitted() {
     if (this.#freed) throw new DisposedError('LGBModel has been disposed.')
     if (!this.#fitted) throw new NotFittedError('LGBModel is not fitted. Call fit() first.')
+  }
+
+  #resolveTask(y) {
+    const task = this.#params.task
+    if (!task) return
+    if (this.#params.objective) {
+      throw new Error("Cannot set both 'task' and 'objective'. Use one or the other.")
+    }
+    if (task === 'classification') {
+      // Count unique values in y to decide binary vs multiclass
+      const yNorm = normalizeY(y)
+      const unique = new Set()
+      for (let i = 0; i < yNorm.length; i++) unique.add(yNorm[i])
+      if (unique.size > 2) {
+        this.#params.objective = 'multiclass'
+        this.#params.num_class = unique.size
+      } else {
+        this.#params.objective = 'binary'
+      }
+    } else if (task === 'regression') {
+      this.#params.objective = 'regression'
+    } else {
+      throw new Error(`Unknown task: '${task}'. Use 'classification' or 'regression'.`)
+    }
   }
 
   #isClassifier() {
