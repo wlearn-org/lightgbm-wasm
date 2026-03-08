@@ -1,12 +1,12 @@
-import { loadLGB, getWasm } from './wasm.js'
-import { Dataset } from './dataset.js'
-import { Booster } from './booster.js'
-import {
+const { loadLGB, getWasm } = require('./wasm.js')
+const { Dataset } = require('./dataset.js')
+const { Booster } = require('./booster.js')
+const {
   normalizeY,
   encodeBundle, decodeBundle,
   register,
   DisposedError, NotFittedError
-} from '@wlearn/core'
+} = require('@wlearn/core')
 
 // FinalizationRegistry safety net
 const leakRegistry = typeof FinalizationRegistry !== 'undefined'
@@ -36,7 +36,7 @@ const LOAD_SENTINEL = Symbol('load')
 
 // --- LGBModel ---
 
-export class LGBModel {
+class LGBModel {
   #booster = null
   #freed = false
   #boosterRef = null
@@ -449,3 +449,5 @@ export class LGBModel {
 
 register('wlearn.lightgbm.classifier@1', async (m, t, b) => LGBModel._fromBundle(m, t, b))
 register('wlearn.lightgbm.regressor@1', async (m, t, b) => LGBModel._fromBundle(m, t, b))
+
+module.exports = { LGBModel }

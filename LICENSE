@@ -1,6 +1,7 @@
-MIT License
+The MIT License (MIT)
 
-Copyright (c) 2025 StatSim
+Copyright (c) Microsoft Corporation (LightGBM)
+Copyright (c) 2026 Anton Zemlyansky (WASM port)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,5 +1,5 @@
-import { LGBModel, loadLGB, Dataset, Booster } from '../src/index.js'
-import { decodeBundle } from '@wlearn/core'
+const { LGBModel, loadLGB, Dataset, Booster } = require('../src/index.js')
+const { decodeBundle } = require('@wlearn/core')
 
 // --- Test harness ---
 
@@ -80,6 +80,8 @@ function makeRegressionData(n, seed = 42) {
 }
 
 // --- Tests ---
+
+async function main() {
 
 console.log('\n=== @wlearn/lightgbm Test Suite ===\n')
 
@@ -642,3 +644,7 @@ await test('task: unknown throws', async () => {
 
 console.log(`\n=== Results: ${passed}/${total} passed, ${failed} failed ===\n`)
 if (failed > 0) process.exit(1)
+
+}
+
+main()

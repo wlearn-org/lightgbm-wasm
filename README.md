@@ -2,7 +2,7 @@
 
 LightGBM v4.6.0 compiled to WebAssembly. Gradient boosting for classification and regression in browsers and Node.js.
 
-Based on [LightGBM v4.6.0](https://github.com/microsoft/LightGBM) (MIT). Zero dependencies. ESM.
+Based on [LightGBM v4.6.0](https://github.com/microsoft/LightGBM) (MIT). Zero dependencies. CommonJS.
 
 ## Install
 
@@ -13,7 +13,7 @@ npm install @wlearn/lightgbm
 ## Quick start
 
 ```js
-import { LGBModel } from '@wlearn/lightgbm'
+const { LGBModel } = require('@wlearn/lightgbm')
 
 const model = await LGBModel.create({
   objective: 'binary',
@@ -148,7 +148,7 @@ All standard LightGBM objectives should work. These are tested in CI.
 For direct access to LightGBM's C API, use the lower-level `Dataset` and `Booster` classes:
 
 ```js
-import { loadLGB, Dataset, Booster } from '@wlearn/lightgbm'
+const { loadLGB, Dataset, Booster } = require('@wlearn/lightgbm')
 
 await loadLGB()
 

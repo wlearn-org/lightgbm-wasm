@@ -1,4 +1,4 @@
-import { getWasm } from './wasm.js'
+const { getWasm } = require('./wasm.js')
 
 // FinalizationRegistry safety net
 const registry = typeof FinalizationRegistry !== 'undefined'
@@ -25,7 +25,7 @@ function getLastError(wasm) {
   return wasm.UTF8ToString(wasm._wl_lgb_get_last_error())
 }
 
-export class Dataset {
+class Dataset {
   #handle = null
   #freed = false
   #ptrRef = null
@@ -101,3 +101,5 @@ export class Dataset {
     this.#handle = null
   }
 }
+
+module.exports = { Dataset }
