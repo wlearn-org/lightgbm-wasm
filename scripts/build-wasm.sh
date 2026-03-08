@@ -96,7 +96,7 @@ em++ \
   -Wl,--whole-archive "$LGB_LIB" -Wl,--no-whole-archive \
   -O2 \
   -fexceptions \
-  -o "${OUTPUT_DIR}/lightgbm.cjs" \
+  -o "${OUTPUT_DIR}/lightgbm.js" \
   -s MODULARIZE=1 \
   -s SINGLE_FILE=1 \
   -s EXPORT_NAME=createLightGBM \
@@ -121,5 +121,5 @@ wasm_embedded: true
 EOF
 
 echo "=== Build complete ==="
-ls -lh "${OUTPUT_DIR}/lightgbm.cjs"
+ls -lh "${OUTPUT_DIR}/lightgbm.js"
 cat "${OUTPUT_DIR}/BUILD_INFO"

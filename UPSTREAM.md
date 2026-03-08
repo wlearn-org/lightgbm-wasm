@@ -34,7 +34,7 @@
 
 ## Build output
 
-- `wasm/lightgbm.cjs` (WASM embedded via SINGLE_FILE=1)
+- `wasm/lightgbm.js` (WASM embedded via SINGLE_FILE=1)
 - Flags: `-O2 -fexceptions`
 - Single-threaded, CPU only
 

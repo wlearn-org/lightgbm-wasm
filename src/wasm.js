@@ -8,7 +8,7 @@ async function loadLGB(options = {}) {
   if (loading) return loading
 
   loading = (async () => {
-    const createLightGBM = require('../wasm/lightgbm.cjs')
+    const createLightGBM = require('../wasm/lightgbm.js')
     wasmModule = await createLightGBM(options)
     return wasmModule
   })()
