@@ -32,6 +32,15 @@
     "@wlearn/core": "0.1.0",
     "@wlearn/types": "0.1.0"
   },
+  "keywords": [
+    "lightgbm",
+    "gradient-boosting",
+    "machine-learning",
+    "wasm",
+    "webassembly",
+    "wlearn"
+  ],
+  "author": "Anton Zemlyansky",
   "license": "MIT",
   "repository": {
     "type": "git",
