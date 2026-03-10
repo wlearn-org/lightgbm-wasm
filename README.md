@@ -2,7 +2,7 @@
 
 LightGBM v4.6.0 compiled to WebAssembly. Gradient boosting for classification and regression in browsers and Node.js.
 
-Based on [LightGBM v4.6.0](https://github.com/microsoft/LightGBM) (MIT). Zero dependencies. CommonJS.
+Part of [wlearn](https://wlearn.org) ([GitHub](https://github.com/wlearn-org), [all packages](https://github.com/wlearn-org/wlearn#repository-structure)). Based on [LightGBM v4.6.0](https://github.com/microsoft/LightGBM) (MIT). Zero dependencies. CommonJS.
 
 ## Install
 
