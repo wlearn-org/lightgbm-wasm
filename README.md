@@ -16,7 +16,7 @@ npm install @wlearn/lightgbm
 const { LGBModel } = require('@wlearn/lightgbm')
 
 const model = await LGBModel.create({
-  objective: 'binary',
+  task: 'classification',  // or 'regression'; auto-detected from labels if omitted
   learning_rate: 0.05,
   num_leaves: 31,
   numRound: 100
