@@ -418,9 +418,8 @@ class LGBModel {
   #resolveTask(y) {
     const task = this.#params.task
     if (!task) return
-    if (this.#params.objective) {
-      throw new Error("Cannot set both 'task' and 'objective'. Use one or the other.")
-    }
+    // If objective is already set, it takes precedence over task
+    if (this.#params.objective) return
     if (task === 'classification') {
       // Count unique values in y to decide binary vs multiclass
       const yNorm = normalizeY(y)
