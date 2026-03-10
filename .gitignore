@@ -1,7 +1,9 @@
 build/
 node_modules/
 wasm/
+dist/
 .build_tmp/
 *.o
 *.a
 .DS_Store
+package-lock.json
