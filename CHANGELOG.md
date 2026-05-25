@@ -2,6 +2,9 @@
 
 ## 0.2.0
 
+- Depend on the CommonJS `@wlearn/core` release
+- Add package homepage and GitHub issue metadata
+
 - Wrap LGBModel with `createModelClass` for unified task detection
 - Add `task` parameter: `'classification'` or `'regression'`, auto-detected from labels if omitted
 - When both `task` and `objective` are set, `objective` takes precedence
