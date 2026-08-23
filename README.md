@@ -13,6 +13,7 @@ npm install @wlearn/lightgbm
 ## Quick start
 
 ```js
+const { readFileSync, writeFileSync } = require('fs')
 const { LGBModel } = require('@wlearn/lightgbm')
 
 const model = await LGBModel.create({
@@ -38,12 +39,8 @@ const probs = model.predictProba([[2, 3], [6, 7]])  // Float64Array (nrow * ncla
 const accuracy = model.score([[2, 3], [6, 7]], [0, 1])
 
 // Save / load
-const buf = model.save()  // Uint8Array (WLRN bundle)
-const model2 = await LGBModel.load(buf)
-
-// Clean up -- required, WASM memory is not garbage collected
-model.dispose()
-model2.dispose()
+writeFileSync('lightgbm.wlrn', model.save())
+const model2 = await LGBModel.load(readFileSync('lightgbm.wlrn'))
 ```
 
 ## Typed matrix input
@@ -123,7 +120,7 @@ Save to / load from `Uint8Array` (WLRN bundle with LightGBM text model blob).
 
 ### `model.dispose()`
 
-Free WASM memory. Required. Idempotent.
+Release WASM memory immediately. Use in long-running apps, workers, cross-validation, and AutoML loops. Idempotent.
 
 ### `model.getParams()` / `model.setParams(p)`
 
@@ -173,7 +170,7 @@ ds.dispose()
 - `data` -- `Float32Array` (row-major)
 - `params` -- LightGBM parameter string (`"key1=value1 key2=value2"`)
 - `.setLabel(labels)` -- set target labels (`Float32Array`)
-- `.dispose()` -- free WASM memory
+- `.dispose()` -- release WASM memory
 
 ### `Booster(trainDataHandle, paramsStr)`
 
@@ -181,7 +178,7 @@ ds.dispose()
 - `.predict(data, nrow, ncol, opts?)` -- predict, returns `Float64Array`
 - `.saveModel()` -- returns `Uint8Array` (LightGBM text format)
 - `.getNumClasses()` -- number of classes
-- `.dispose()` -- free WASM memory
+- `.dispose()` -- release WASM memory
 
 ### `Booster.loadModel(buffer)`
 
@@ -189,7 +186,7 @@ Load from `Uint8Array`. Returns a `Booster`.
 
 ## Resource management
 
-WASM heap memory is not garbage collected. Call `.dispose()` on every `Dataset`, `Booster`, and `LGBModel` when done. A `FinalizationRegistry` safety net warns if you forget, but do not rely on it.
+Use `.dispose()` when creating and discarding many `Dataset`, `Booster`, or `LGBModel` objects so WASM memory is released promptly.
 
 ## Build from source
 

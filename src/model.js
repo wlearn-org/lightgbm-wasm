@@ -44,6 +44,8 @@ class LGBModel {
   #fitted = false
   #nrClass = 0
   #classes = null
+  #objectiveInferred = false
+  #numClassInferred = false
 
   constructor(handle, params, extra) {
     if (handle === LOAD_SENTINEL) {
@@ -325,6 +327,23 @@ class LGBModel {
   }
 
   setParams(p) {
+    if (Object.prototype.hasOwnProperty.call(p, 'objective')) {
+      this.#objectiveInferred = false
+      if (this.#numClassInferred && !Object.prototype.hasOwnProperty.call(p, 'num_class')) {
+        delete this.#params.num_class
+        this.#numClassInferred = false
+      }
+    } else if (Object.prototype.hasOwnProperty.call(p, 'task') && this.#objectiveInferred) {
+      delete this.#params.objective
+      this.#objectiveInferred = false
+      if (this.#numClassInferred) {
+        delete this.#params.num_class
+        this.#numClassInferred = false
+      }
+    }
+    if (Object.prototype.hasOwnProperty.call(p, 'num_class')) {
+      this.#numClassInferred = false
+    }
     Object.assign(this.#params, p)
     return this
   }
@@ -427,7 +446,10 @@ class LGBModel {
       for (let i = 0; i < yNorm.length; i++) unique.add(yNorm[i])
       if (unique.size > 2) {
         this.#params.objective = 'multiclass'
-        this.#params.num_class = unique.size
+        if (this.#params.num_class == null) {
+          this.#params.num_class = unique.size
+          this.#numClassInferred = true
+        }
       } else {
         this.#params.objective = 'binary'
       }
@@ -436,6 +458,7 @@ class LGBModel {
     } else {
       throw new Error(`Unknown task: '${task}'. Use 'classification' or 'regression'.`)
     }
+    this.#objectiveInferred = true
   }
 
   #isClassifier() {

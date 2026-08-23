@@ -555,6 +555,33 @@ await test('Extra trees mode works', async () => {
 // --- Task Param Mapping ---
 console.log('\n-- Task Param Mapping --')
 
+await test('unified model infers classification before fitting the prepared inner model', async () => {
+  const X = { data: new Float64Array([0, 0, 0, 1, 1, 0, 1, 1]), rows: 4, cols: 2 }
+  const y = new Int32Array([0, 0, 1, 1])
+  const model = await LGBModel.create({ numRound: 3, max_depth: 2, min_data_in_leaf: 1, verbosity: -1 })
+  model.fit(X, y)
+
+  const manifest = decodeBundle(model.save()).manifest
+  assert(model.task === 'classification', `expected classification, got ${model.task}`)
+  assert(manifest.typeId === 'wlearn.lightgbm.classifier@1', `unexpected typeId: ${manifest.typeId}`)
+  assert(manifest.params.task === 'classification', 'inferred task missing from inner manifest')
+  assert(manifest.params.objective === 'binary', `unexpected objective: ${manifest.params.objective}`)
+  assert(model.predictProba(X).length === 8, 'expected binary probability matrix')
+  model.dispose()
+})
+
+await test('unified model honors explicit regression for integer-valued targets', async () => {
+  const X = { data: new Float64Array([0, 0, 0, 1, 1, 0, 1, 1]), rows: 4, cols: 2 }
+  const y = new Float64Array([0, 1, 2, 3])
+  const model = await LGBModel.create({ task: 'regression', numRound: 3, max_depth: 2, min_data_in_leaf: 1, verbosity: -1 })
+  model.fit(X, y)
+
+  const manifest = decodeBundle(model.save()).manifest
+  assert(manifest.typeId === 'wlearn.lightgbm.regressor@1', `unexpected typeId: ${manifest.typeId}`)
+  assert(manifest.params.objective === 'regression', `unexpected objective: ${manifest.params.objective}`)
+  model.dispose()
+})
+
 await test('task: classification (binary)', async () => {
   const rng = makeLCG(99)
   const n = 40, f = 2
@@ -619,19 +646,82 @@ await test('task + objective coexist (objective wins)', async () => {
   model.dispose()
 })
 
+await test('auto-inferred objective follows classification/regression task changes', async () => {
+  const X = {
+    data: new Float64Array([-2, -1, -1, -2, 1, 2, 2, 1, 0.5, 1.5, -1.5, -0.5]),
+    rows: 6,
+    cols: 2
+  }
+  const classificationY = new Int32Array([0, 0, 1, 1, 1, 0])
+  const regressionY = new Float64Array([-3, -2, 2, 3, 1.5, -1.5])
+  const common = { numRound: 3, max_depth: 2, min_data_in_leaf: 1, verbosity: -1 }
+  const cases = [
+    ['classification', classificationY, 'regression', regressionY,
+      'regression', 'wlearn.lightgbm.regressor@1'],
+    ['regression', regressionY, 'classification', classificationY,
+      'binary', 'wlearn.lightgbm.classifier@1']
+  ]
+
+  for (const [firstTask, firstY, nextTask, nextY, expectedObjective, expectedTypeId] of cases) {
+    const model = await LGBModel.create({ task: firstTask, ...common })
+    model.fit(X, firstY)
+    model.setParams({ task: nextTask })
+    model.fit(X, nextY)
+
+    assert(model.getParams().objective === expectedObjective,
+      `${firstTask} -> ${nextTask} kept ${model.getParams().objective}`)
+    assert(model.capabilities.regressor === (nextTask === 'regression'),
+      `capabilities do not match ${nextTask}`)
+    const predictions = model.predict(X)
+    const bytes = model.save()
+    assert(decodeBundle(bytes).manifest.typeId === expectedTypeId,
+      `bundle type does not match ${nextTask}`)
+
+    const loaded = await LGBModel.load(bytes)
+    const loadedPredictions = loaded.predict(X)
+    for (let i = 0; i < predictions.length; i++) {
+      assertClose(predictions[i], loadedPredictions[i], 1e-10,
+        `save/load prediction mismatch at ${i}`)
+    }
+    loaded.dispose()
+    model.dispose()
+  }
+
+  const multiclass = await LGBModel.create({ task: 'classification', ...common })
+  multiclass.fit(X, new Int32Array([0, 1, 2, 0, 1, 2]))
+  assert(multiclass.getParams().num_class === 3, 'multiclass count should be inferred')
+  multiclass.setParams({ task: 'regression' })
+  multiclass.fit(X, regressionY)
+  assert(!Object.prototype.hasOwnProperty.call(multiclass.getParams(), 'num_class'),
+    'inferred multiclass count must not leak into regression')
+  multiclass.dispose()
+
+  const { LGBModel: PublicLGBModel } = require('../src/index.js')
+  const publicModel = await PublicLGBModel.create(common)
+  publicModel.fit(X, classificationY)
+  assert(publicModel.task === 'classification', 'public model should detect classification')
+  publicModel.setParams({ task: 'regression' }).fit(X, regressionY)
+  assert(publicModel.task === 'regression' && publicModel.capabilities.regressor,
+    'public model should switch to regression')
+  publicModel.setParams({ task: 'classification' }).fit(X, classificationY)
+  assert(publicModel.task === 'classification' && publicModel.capabilities.classifier,
+    'public model should switch back to classification')
+  publicModel.dispose()
+})
+
 await test('task: unknown throws', async () => {
   let threw = false
-  const model = await LGBModel.create({ task: 'clustering', numRound: 5 })
   try {
+    const model = await LGBModel.create({ task: 'clustering', numRound: 5 })
     const X = { data: new Float64Array([0, 0, 1, 1]), rows: 2, cols: 2 }
     const y = new Int32Array([0, 1])
     model.fit(X, y)
+    model.dispose()
   } catch (e) {
     threw = true
     assert(e.message.includes('Unknown task'), `unexpected error: ${e.message}`)
   }
   assert(threw, 'expected error for unknown task')
-  model.dispose()
 })
 
 // --- Summary ---
