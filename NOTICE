@@ -1,0 +1,11 @@
+@wlearn/lightgbm
+
+The WebAssembly build includes Eigen under MPL-2.0 and permissive
+licenses. EIGEN_MPL2_ONLY excludes its GPL/LGPL-only modules.
+Eigen source files are unmodified. Corresponding source, including its
+copyright notices, is available under those licenses at:
+https://gitlab.com/libeigen/eigen/-/tree/3147391d946bb4b6c68edd901f2add6ac1f31f8c
+https://gitlab.com/libeigen/eigen/-/archive/3147391d946bb4b6c68edd901f2add6ac1f31f8c/eigen-3147391d946bb4b6c68edd901f2add6ac1f31f8c.tar.gz
+
+Dependency license texts and attribution are included in licenses/.
+Browser bundles also contain @wlearn/core under Apache-2.0.

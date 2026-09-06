@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# Build LightGBM v4.6.0 as WASM via Emscripten
-# Prerequisites: emsdk activated (emcc, emcmake, emmake in PATH)
+# Build LightGBM v4.7.0 as WASM via Emscripten
+# Prerequisites: emsdk activated and CMake >= 3.28 in PATH
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
@@ -69,6 +69,14 @@ fi
 
 echo "Using: $LGB_LIB"
 
+# The manual WASM link must include the CMake target's static dependency.
+# --whole-archive retains the Arrow C API, even when callers only use dense data.
+NANOARROW_LIB="${BUILD_DIR}/external_libs/nanoarrow/libnanoarrow_static.a"
+if [ ! -f "$NANOARROW_LIB" ]; then
+  echo "ERROR: nanoarrow static library not found at $NANOARROW_LIB"
+  exit 1
+fi
+
 EXPORTED_FUNCTIONS='[
   "_wl_lgb_get_last_error",
   "_wl_lgb_dataset_create_from_mat",
@@ -94,6 +102,7 @@ em++ \
   "${PROJECT_DIR}/csrc/wl_lgb_api.c" \
   -I "$UPSTREAM_DIR/include" \
   -Wl,--whole-archive "$LGB_LIB" -Wl,--no-whole-archive \
+  "$NANOARROW_LIB" \
   -O2 \
   -fexceptions \
   -o "${OUTPUT_DIR}/lightgbm.js" \
@@ -113,11 +122,11 @@ bash "${SCRIPT_DIR}/verify-exports.sh"
 
 echo "=== Writing BUILD_INFO ==="
 cat > "${OUTPUT_DIR}/BUILD_INFO" <<EOF
-upstream: LightGBM v4.6.0
+upstream: LightGBM v4.7.0
 upstream_commit: $(cd "$UPSTREAM_DIR" && git rev-parse HEAD 2>/dev/null || echo "unknown")
 build_date: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 emscripten: $(emcc --version | head -1)
-build_flags: -O2 -fexceptions SINGLE_FILE=1
+build_flags: -O2 -std=c++17 -fexceptions SINGLE_FILE=1 nanoarrow_static
 wasm_embedded: true
 EOF
 

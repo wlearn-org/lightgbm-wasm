@@ -1,8 +1,8 @@
 # @wlearn/lightgbm
 
-LightGBM v4.6.0 compiled to WebAssembly. Gradient boosting for classification and regression in browsers and Node.js.
+LightGBM v4.7.0 compiled to WebAssembly. Gradient boosting for classification and regression in browsers and Node.js.
 
-Part of [wlearn](https://wlearn.org) ([GitHub](https://github.com/wlearn-org), [all packages](https://github.com/wlearn-org/wlearn#repository-structure)). Based on [LightGBM v4.6.0](https://github.com/microsoft/LightGBM) (MIT). Zero dependencies. CommonJS.
+Part of [wlearn](https://wlearn.org) ([GitHub](https://github.com/wlearn-org), [all packages](https://github.com/wlearn-org/wlearn#repository-structure)). Based on [LightGBM v4.7.0](https://github.com/lightgbm-org/LightGBM) (MIT). CommonJS.
 
 ## Install
 
@@ -174,7 +174,8 @@ ds.dispose()
 
 ### `Booster(trainDataHandle, paramsStr)`
 
-- `.update()` -- run one training round, returns `true` if training finished
+- `.update()` -- run one training round, returns `true` if it produced no splits;
+  later randomized rounds may still learn
 - `.predict(data, nrow, ncol, opts?)` -- predict, returns `Float64Array`
 - `.saveModel()` -- returns `Uint8Array` (LightGBM text format)
 - `.getNumClasses()` -- number of classes
@@ -190,13 +191,14 @@ Use `.dispose()` when creating and discarding many `Dataset`, `Booster`, or `LGB
 
 ## Build from source
 
-Requires [Emscripten](https://emscripten.org/) (emsdk) activated.
+Requires [Emscripten](https://emscripten.org/) (emsdk) activated and CMake >=3.28.
+The build compiles LightGBM as C++17 and links its bundled nanoarrow C dependency.
 
 ```bash
 git clone --recurse-submodules https://github.com/wlearn-org/lightgbm-wasm
 cd lightgbm-wasm
 bash scripts/build-wasm.sh
-node --test test/
+npm test
 ```
 
 If you already cloned without `--recurse-submodules`:
@@ -207,4 +209,7 @@ git submodule update --init --recursive
 
 ## License
 
-MIT (same as upstream LightGBM)
+MIT (same as upstream LightGBM). The WASM binary also includes Apache Arrow
+nanoarrow under Apache-2.0; its license and notice are shipped in `licenses/nanoarrow/`.
+
+Embedded Eigen uses MPL-2.0 and permissive licenses. `NOTICE` links its unmodified source; `licenses/` contains dependency licenses. The build enables `EIGEN_MPL2_ONLY` to exclude GPL/LGPL-only Eigen modules. Browser bundles retain these notices.
