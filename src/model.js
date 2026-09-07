@@ -348,9 +348,9 @@ class LGBModel {
     return this
   }
 
-  static defaultSearchSpace() {
+  static defaultSearchSpace(task) {
     return {
-      objective: { type: 'categorical', values: ['binary', 'regression'] },
+      ...(task ? {} : { objective: { type: 'categorical', values: ['binary', 'regression'] } }),
       max_depth: { type: 'int_uniform', low: 3, high: 12 },
       learning_rate: { type: 'log_uniform', low: 0.01, high: 0.3 },
       numRound: { type: 'int_uniform', low: 50, high: 500 },
